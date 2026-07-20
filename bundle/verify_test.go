@@ -49,7 +49,7 @@ func TestVerifyChecksOpenMPEntryPoints(t *testing.T) {
 	manifest := Manifest{
 		SchemaVersion: 1, Name: "fixture", Version: "1.0.0", RuntimeProfile: "openmp",
 		Server: Server{Version: "1.4.0", Binary: []Artifact{{
-			Path: "server", Platform: "linux-x86_64", Checksum: "sha256:" + hex.EncodeToString(sum[:]),
+			Path: "server", Platform: "any", Checksum: "sha256:" + hex.EncodeToString(sum[:]),
 		}}},
 		EntryPoints:   EntryPoints{Gamemode: "gamemodes/main.amx", Filterscripts: []string{"filterscripts/extra.amx"}},
 		Configuration: &Config{Path: "config.json", Schema: "https://schemas.pawnkit.dev/openmp-config/v1/schema.json"},
@@ -59,7 +59,7 @@ func TestVerifyChecksOpenMPEntryPoints(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if _, err := VerifyDirectory(root, "linux-x86_64"); err == nil {
+	if _, err := VerifyDirectory(root, "any"); err == nil {
 		t.Fatal("mismatched open.mp entry point was accepted")
 	}
 
@@ -68,7 +68,7 @@ func TestVerifyChecksOpenMPEntryPoints(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if _, err := VerifyDirectory(root, "linux-x86_64"); err != nil {
+	if _, err := VerifyDirectory(root, "any"); err != nil {
 		t.Fatal(err)
 	}
 }
