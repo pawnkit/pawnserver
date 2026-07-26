@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "repository": "pawnkit/pawnserver",
+  "maturity": "experimental",
+  "platforms": ["linux-amd64"],
+  "profiles": ["openmp"],
+  "compilers": [],
+  "contracts": [
+    { "name": "pawn-bundle", "major": 1 }
+  ],
+  "limitations": [
+    "Artifact signing and open.mp component acquisition are not implemented.",
+    "Windows and macOS builds are not tested in this repository."
+  ]
+}

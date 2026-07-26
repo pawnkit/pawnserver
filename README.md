@@ -1,5 +1,7 @@
 # pawnserver
 
+[![Maturity: experimental](https://img.shields.io/badge/maturity-experimental-orange)](.pawnkit/support.json)
+
 `pawnserver` packages and operates SA-MP and open.mp server installations. A
 bundle records the server binary, AMX entry points, native extensions,
 configuration, checksums, and files that must survive an update.
