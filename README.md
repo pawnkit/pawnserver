@@ -18,6 +18,9 @@ pawnserver --version
 Release archives are available for Linux, macOS, and Windows on amd64 and
 arm64.
 
+PawnKit's tested server set pins the supported archives and checksums:
+`server-preview-2026-07-29` in `pawnkit-spec v0.1.42`.
+
 ## Build and inspect a bundle
 
 Prepare a directory containing `pawn-bundle.json` and every declared file:

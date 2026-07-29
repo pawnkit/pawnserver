@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Verify released server archives through the shared tested release set.
+
 ## 0.1.1 - 2026-07-25
 
 - Added the experimental support record with CI validation.
