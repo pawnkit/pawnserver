@@ -17,7 +17,10 @@ import (
 
 const maxIndexBytes = 1 << 20
 
-var checksumPattern = regexp.MustCompile(`^sha256:[0-9a-f]{64}$`)
+var (
+	checksumPattern = regexp.MustCompile(`^sha256:[0-9a-f]{64}$`)
+	targetPattern   = regexp.MustCompile(`^(linux|windows|darwin)-(amd64|arm64|386)$`)
+)
 
 type Index struct {
 	SchemaVersion int        `json:"schemaVersion"`
@@ -126,7 +129,7 @@ func (index Index) validate() error {
 
 func (artifact Artifact) validate() error {
 	if artifact.Vendor == "" || artifact.Version == "" || artifact.Profile == "" ||
-		artifact.Target == "" || artifact.Archive.Size < 1 {
+		!targetPattern.MatchString(artifact.Target) || artifact.Archive.Size < 1 {
 		return errors.New("runtime artifact is missing required fields")
 	}
 	if artifact.Archive.Format != "zip" && artifact.Archive.Format != "tar.gz" {

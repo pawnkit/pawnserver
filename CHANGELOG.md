@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.1 - 2026-07-30
+
+- Install verified ZIP and tar.gz runtimes with recoverable replacement.
+
 ## 0.2.0 - 2026-07-30
 
 - Verify and select server downloads from RFC 0020 runtime indexes.
