@@ -104,13 +104,13 @@ jobs:
           path: .pawnkit/spec
           persist-credentials: false
       - id: pawnserver
-        uses: pawnkit/pawn-actions/release-set@v1.7.0
+        uses: pawnkit/pawn-actions/release-set@v1.8.11
         with:
           release-set: .pawnkit/spec/release-sets/server-preview-2026-07-29.json
           component: pawnserver
           target: ${{ matrix.target }}
           verify-remote: 'false'
-      - uses: pawnkit/pawn-actions/setup-tool@v1.7.0
+      - uses: pawnkit/pawn-actions/setup-tool@v1.8.11
         with:
           binary: pawnserver
           version: ${{ steps.pawnserver.outputs.version }}
