@@ -112,7 +112,7 @@ func extractZip(data []byte, destination string) error {
 			return fmt.Errorf("runtime archive contains a link: %s", file.Name)
 		}
 		if file.FileInfo().IsDir() {
-			if _, err := safeDestination(destination, file.Name); err != nil {
+			if _, err := safeDestination(destination, strings.TrimSuffix(file.Name, "/")); err != nil {
 				return err
 			}
 			continue
@@ -159,16 +159,20 @@ func extractTarGzip(data []byte, destination string) error {
 		if entries >= maxArchiveEntries {
 			return errors.New("runtime archive has too many entries")
 		}
-		target, err := safeDestination(destination, header.Name)
-		if err != nil {
-			return err
-		}
 		switch header.Typeflag {
 		case tar.TypeDir:
+			target, err := safeDestination(destination, strings.TrimSuffix(header.Name, "/"))
+			if err != nil {
+				return err
+			}
 			if err := os.MkdirAll(target, 0o750); err != nil {
 				return err
 			}
 		case tar.TypeReg:
+			target, err := safeDestination(destination, header.Name)
+			if err != nil {
+				return err
+			}
 			if header.Size < 0 || header.Size > maxExtractedBytes-total {
 				return errors.New("runtime archive exceeds extraction limit")
 			}
@@ -196,6 +200,9 @@ func writeRegularFile(target string, reader io.Reader) error {
 }
 
 func safeDestination(root, name string) (string, error) {
+	if strings.ContainsRune(name, '\\') {
+		return "", fmt.Errorf("unsafe runtime archive path %q", name)
+	}
 	name = filepath.FromSlash(name)
 	if name == "" || filepath.IsAbs(name) || filepath.Clean(name) != name ||
 		name == "." || strings.HasPrefix(name, ".."+string(filepath.Separator)) {

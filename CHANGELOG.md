@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.3.1 - 2026-07-30
+
+- Accept standard trailing slashes on runtime archive directories.
+- Reject backslash paths consistently on every host.
+
 ## 0.3.0 - 2026-07-30
 
 - Define the shared cache layout for installed server runtimes.
