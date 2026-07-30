@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.0 - 2026-07-30
+
+- Define the shared cache layout for installed server runtimes.
+
 ## 0.2.1 - 2026-07-30
 
 - Install verified ZIP and tar.gz runtimes with recoverable replacement.
