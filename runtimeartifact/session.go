@@ -56,7 +56,7 @@ func PrepareSession(runtimeDir, script, destination string, options SessionOptio
 		network["port"] = options.Port
 	}
 	pawn := object(config, "pawn")
-	pawn["main_scripts"] = []string{"gamemodes/main 1"}
+	pawn["main_scripts"] = []string{"main 1"}
 	pawn["side_scripts"] = []string{}
 
 	parent := filepath.Dir(destination)

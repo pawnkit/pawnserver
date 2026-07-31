@@ -42,7 +42,7 @@ func TestPrepareSessionUsesLocalScriptAndConfiguration(t *testing.T) {
 		t.Fatalf("port = %v", network["port"])
 	}
 	pawn := config["pawn"].(map[string]any)
-	if got := pawn["main_scripts"].([]any)[0]; got != "gamemodes/main 1" {
+	if got := pawn["main_scripts"].([]any)[0]; got != "main 1" {
 		t.Fatalf("main script = %v", got)
 	}
 	if got := len(pawn["side_scripts"].([]any)); got != 0 {

@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.2 - 2026-07-31
+
+- Load staged gamemodes from open.mp's gamemode search directory.
+
 ## 0.4.1 - 2026-07-31
 
 - Verify cached runtime executables before reuse.
