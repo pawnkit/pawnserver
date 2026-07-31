@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.0 - 2026-07-31
+
+- Apply accepted sampctl runtime settings to isolated open.mp sessions.
+
 ## 0.4.2 - 2026-07-31
 
 - Load staged gamemodes from open.mp's gamemode search directory.

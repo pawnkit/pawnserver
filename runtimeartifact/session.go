@@ -14,7 +14,41 @@ import (
 const maxScriptBytes = 128 << 20
 
 type SessionOptions struct {
-	Port int
+	Name               string
+	Language           string
+	Website            string
+	Password           string
+	Announce           *bool
+	EnableQuery        *bool
+	MaxPlayers         int
+	MaxBots            int
+	Sleep              float64
+	Port               int
+	Bind               string
+	LANMode            *bool
+	OnFootRate         int
+	InVehicleRate      int
+	AimingRate         int
+	StreamRate         int
+	StreamRadius       float64
+	PlayerTimeout      int
+	AcksLimit          int
+	MessagesLimit      int
+	MessageHoleLimit   int
+	MinConnectionTime  int
+	ConnectionSeed     int
+	GameMode           string
+	MapName            string
+	LagCompMode        int
+	RCON               *bool
+	RCONPassword       string
+	LogQueries         *bool
+	LogChat            *bool
+	LogTimestamps      *bool
+	LogTimestampFormat string
+	LogDatabase        *bool
+	LogDatabaseQueries *bool
+	LogCookies         *bool
 }
 
 type Session struct {
@@ -51,10 +85,7 @@ func PrepareSession(runtimeDir, script, destination string, options SessionOptio
 	if err != nil {
 		return Session{}, err
 	}
-	if options.Port != 0 {
-		network := object(config, "network")
-		network["port"] = options.Port
-	}
+	applySessionOptions(config, options)
 	pawn := object(config, "pawn")
 	pawn["main_scripts"] = []string{"main 1"}
 	pawn["side_scripts"] = []string{}
@@ -87,6 +118,54 @@ func PrepareSession(runtimeDir, script, destination string, options SessionOptio
 		Configuration: filepath.Join(destination, "config.json"),
 		Script:        filepath.Join(destination, "gamemodes", "main.amx"),
 	}, nil
+}
+
+func applySessionOptions(config map[string]any, options SessionOptions) {
+	setString(config, "name", options.Name)
+	setString(config, "language", options.Language)
+	setString(config, "website", options.Website)
+	setString(config, "password", options.Password)
+	setBool(config, "announce", options.Announce)
+	setBool(config, "enable_query", options.EnableQuery)
+	setInt(config, "max_players", options.MaxPlayers)
+	setInt(config, "max_bots", options.MaxBots)
+	if options.Sleep != 0 {
+		config["sleep"] = options.Sleep
+	}
+
+	network := object(config, "network")
+	setInt(network, "port", options.Port)
+	setString(network, "bind", options.Bind)
+	setBool(network, "use_lan_mode", options.LANMode)
+	setInt(network, "on_foot_sync_rate", options.OnFootRate)
+	setInt(network, "in_vehicle_sync_rate", options.InVehicleRate)
+	setInt(network, "aiming_sync_rate", options.AimingRate)
+	setInt(network, "stream_rate", options.StreamRate)
+	setFloat(network, "stream_radius", options.StreamRadius)
+	setInt(network, "player_timeout", options.PlayerTimeout)
+	setInt(network, "acks_limit", options.AcksLimit)
+	setInt(network, "messages_limit", options.MessagesLimit)
+	setInt(network, "message_hole_limit", options.MessageHoleLimit)
+	setInt(network, "minimum_connection_time", options.MinConnectionTime)
+	setInt(network, "cookie_reseed_time", options.ConnectionSeed)
+
+	game := object(config, "game")
+	setString(game, "mode", options.GameMode)
+	setString(game, "map", options.MapName)
+	setInt(game, "lag_compensation_mode", options.LagCompMode)
+
+	rcon := object(config, "rcon")
+	setBool(rcon, "enable", options.RCON)
+	setString(rcon, "password", options.RCONPassword)
+
+	logging := object(config, "logging")
+	setBool(logging, "log_queries", options.LogQueries)
+	setBool(logging, "log_chat", options.LogChat)
+	setBool(logging, "use_timestamp", options.LogTimestamps)
+	setString(logging, "timestamp_format", options.LogTimestampFormat)
+	setBool(logging, "log_sqlite", options.LogDatabase)
+	setBool(logging, "log_sqlite_queries", options.LogDatabaseQueries)
+	setBool(logging, "log_cookies", options.LogCookies)
 }
 
 // RunSession starts an installed runtime with an isolated session.
@@ -160,6 +239,30 @@ func object(parent map[string]any, name string) map[string]any {
 	value := make(map[string]any)
 	parent[name] = value
 	return value
+}
+
+func setString(object map[string]any, name, value string) {
+	if value != "" {
+		object[name] = value
+	}
+}
+
+func setBool(object map[string]any, name string, value *bool) {
+	if value != nil {
+		object[name] = *value
+	}
+}
+
+func setInt(object map[string]any, name string, value int) {
+	if value != 0 {
+		object[name] = value
+	}
+}
+
+func setFloat(object map[string]any, name string, value float64) {
+	if value != 0 {
+		object[name] = value
+	}
 }
 
 func copyRegularFile(source, destination string, limit int64) error {

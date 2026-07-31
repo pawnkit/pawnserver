@@ -25,7 +25,11 @@ func TestPrepareSessionUsesLocalScriptAndConfiguration(t *testing.T) {
 		t.Fatal(err)
 	}
 	destination := filepath.Join(root, "session")
-	session, err := PrepareSession(runtimeDir, script, destination, SessionOptions{Port: 7788})
+	disabled := false
+	session, err := PrepareSession(runtimeDir, script, destination, SessionOptions{
+		Name: "Test server", Port: 7788, Announce: &disabled, EnableQuery: &disabled,
+		MaxPlayers: 100, GameMode: "Test mode", RCONPassword: "secret",
+	})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -40,6 +44,15 @@ func TestPrepareSessionUsesLocalScriptAndConfiguration(t *testing.T) {
 	network := config["network"].(map[string]any)
 	if network["port"] != float64(7788) {
 		t.Fatalf("port = %v", network["port"])
+	}
+	if config["name"] != "Test server" || config["announce"] != false || config["max_players"] != float64(100) {
+		t.Fatalf("top-level configuration = %+v", config)
+	}
+	if config["game"].(map[string]any)["mode"] != "Test mode" {
+		t.Fatalf("game configuration = %+v", config["game"])
+	}
+	if config["rcon"].(map[string]any)["password"] != "secret" {
+		t.Fatalf("rcon configuration = %+v", config["rcon"])
 	}
 	pawn := config["pawn"].(map[string]any)
 	if got := pawn["main_scripts"].([]any)[0]; got != "main 1" {
