@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.4.1 - 2026-07-31
+
+- Verify cached runtime executables before reuse.
+
 ## 0.4.0 - 2026-07-31
 
 - Prepare isolated open.mp sessions without modifying the runtime cache.

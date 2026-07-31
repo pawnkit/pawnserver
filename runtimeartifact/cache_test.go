@@ -1,6 +1,7 @@
 package runtimeartifact
 
 import (
+	"os"
 	"path/filepath"
 	"testing"
 )
@@ -13,6 +14,17 @@ func TestCacheDestination(t *testing.T) {
 	want := filepath.Join("cache", "openmultiplayer", "1.5.8.3079", "linux-amd64")
 	if got != want {
 		t.Fatalf("destination = %q, want %q", got, want)
+	}
+}
+
+func TestVerifyInstalledRejectsChangedExecutable(t *testing.T) {
+	artifact := testArtifact([]byte("archive"), []byte("server"))
+	destination := t.TempDir()
+	if err := os.WriteFile(filepath.Join(destination, "omp-server"), []byte("changed"), 0o700); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := VerifyInstalled(artifact, destination); err == nil {
+		t.Fatal("changed executable accepted")
 	}
 }
 

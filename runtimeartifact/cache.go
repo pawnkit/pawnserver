@@ -42,3 +42,15 @@ func ExecutablePath(artifact Artifact, destination string) (string, error) {
 	}
 	return filepath.Join(destination, relative), nil
 }
+
+// VerifyInstalled checks the executable in an installed runtime.
+func VerifyInstalled(artifact Artifact, destination string) (string, error) {
+	executable, err := ExecutablePath(artifact, destination)
+	if err != nil {
+		return "", err
+	}
+	if err := verifyExecutable(executable, artifact.Executable.Checksum); err != nil {
+		return "", err
+	}
+	return executable, nil
+}
