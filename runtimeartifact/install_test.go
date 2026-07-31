@@ -6,6 +6,7 @@ import (
 	"compress/gzip"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 )
@@ -27,10 +28,7 @@ func TestInstallTarGzipRuntime(t *testing.T) {
 	if err != nil || string(got) != "{}" {
 		t.Fatalf("config = %q, %v", got, err)
 	}
-	info, err := os.Stat(filepath.Join(destination, "omp-server"))
-	if err != nil || info.Mode()&0o100 == 0 {
-		t.Fatalf("executable mode = %v, %v", info, err)
-	}
+	assertExecutableInstalled(t, filepath.Join(destination, "omp-server"))
 }
 
 func TestInstallRejectsBackslashTraversal(t *testing.T) {
@@ -61,9 +59,17 @@ func TestInstallTarGzipRuntimeWithoutDirectoryEntries(t *testing.T) {
 	if err != nil || string(got) != "{}" {
 		t.Fatalf("config = %q, %v", got, err)
 	}
-	info, err := os.Stat(filepath.Join(destination, "omp-server"))
-	if err != nil || info.Mode()&0o100 == 0 {
-		t.Fatalf("executable mode = %v, %v", info, err)
+	assertExecutableInstalled(t, filepath.Join(destination, "omp-server"))
+}
+
+func assertExecutableInstalled(t *testing.T, name string) {
+	t.Helper()
+	info, err := os.Stat(name)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if runtime.GOOS != "windows" && info.Mode()&0o100 == 0 {
+		t.Fatalf("executable mode = %v", info.Mode())
 	}
 }
 

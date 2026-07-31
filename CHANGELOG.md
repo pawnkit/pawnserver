@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.5.1 - 2026-07-31
+
+- Make runtime archive mode tests portable to Windows.
+
 ## 0.5.0 - 2026-07-31
 
 - Apply accepted sampctl runtime settings to isolated open.mp sessions.
