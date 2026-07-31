@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.4.0 - 2026-07-31
+
+- Prepare isolated open.mp sessions without modifying the runtime cache.
+- Run verified runtimes with session-local configuration and output.
+
 ## 0.3.1 - 2026-07-30
 
 - Accept standard trailing slashes on runtime archive directories.
