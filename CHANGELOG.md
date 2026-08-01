@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.6.1 - 2026-08-01
+
+- Verify staged server resources against their lockfile checksums.
+
 ## 0.6.0 - 2026-08-01
 
 - Stage bounded plugin, component, and filterscript files in isolated open.mp

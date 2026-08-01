@@ -2,6 +2,9 @@ package runtimeartifact
 
 import (
 	"context"
+	"crypto/sha256"
+	"crypto/subtle"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -22,6 +25,7 @@ const (
 type SessionFile struct {
 	Source      string
 	Destination string
+	Checksum    string
 }
 
 type SessionOptions struct {
@@ -161,6 +165,9 @@ func stageSessionFiles(root string, files []SessionFile) error {
 		if !info.Mode().IsRegular() || info.Mode()&os.ModeSymlink != 0 {
 			return fmt.Errorf("runtime session resource %q is not a regular file", file.Destination)
 		}
+		if err := verifySessionFile(file, info.Size()); err != nil {
+			return err
+		}
 		total += info.Size()
 		if total > maxSessionResourceBytes {
 			return errors.New("runtime session resources exceed size limit")
@@ -171,6 +178,31 @@ func stageSessionFiles(root string, files []SessionFile) error {
 		if err := copyRegularFile(file.Source, destination, maxSessionResourceBytes); err != nil {
 			return fmt.Errorf("runtime session resource %q: %w", file.Destination, err)
 		}
+	}
+	return nil
+}
+
+func verifySessionFile(file SessionFile, size int64) error {
+	algorithm, encoded, ok := strings.Cut(file.Checksum, ":")
+	if !ok || algorithm != "sha256" {
+		return fmt.Errorf("runtime session resource %q has an unsupported checksum", file.Destination)
+	}
+	expected, err := hex.DecodeString(encoded)
+	if err != nil || len(expected) != sha256.Size {
+		return fmt.Errorf("runtime session resource %q has an invalid checksum", file.Destination)
+	}
+	source, err := os.Open(file.Source)
+	if err != nil {
+		return fmt.Errorf("runtime session resource %q: %w", file.Destination, err)
+	}
+	defer func() { _ = source.Close() }()
+	hash := sha256.New()
+	written, err := io.Copy(hash, io.LimitReader(source, size+1))
+	if err != nil {
+		return fmt.Errorf("runtime session resource %q: %w", file.Destination, err)
+	}
+	if written != size || subtle.ConstantTimeCompare(hash.Sum(nil), expected) != 1 {
+		return fmt.Errorf("runtime session resource %q checksum does not match", file.Destination)
 	}
 	return nil
 }

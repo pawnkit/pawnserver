@@ -2,7 +2,9 @@ package runtimeartifact
 
 import (
 	"context"
+	"crypto/sha256"
 	"encoding/json"
+	"fmt"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -33,7 +35,7 @@ func TestPrepareSessionUsesLocalScriptAndConfiguration(t *testing.T) {
 	session, err := PrepareSession(runtimeDir, script, destination, SessionOptions{
 		Name: "Test server", Port: 7788, Announce: &disabled, EnableQuery: &disabled,
 		MaxPlayers: 100, GameMode: "Test mode", RCONPassword: "secret",
-		Files:         []SessionFile{{Source: plugin, Destination: "plugins/streamer.so"}},
+		Files:         []SessionFile{{Source: plugin, Destination: "plugins/streamer.so", Checksum: testChecksum("plugin")}},
 		LegacyPlugins: []string{"streamer"}, SideScripts: []string{"extra 1"},
 	})
 	if err != nil {
@@ -79,7 +81,7 @@ func TestPrepareSessionUsesLocalScriptAndConfiguration(t *testing.T) {
 func TestPrepareSessionRejectsUnsafeResourceDestination(t *testing.T) {
 	root, runtimeDir, script := sessionFixture(t)
 	_, err := PrepareSession(runtimeDir, script, filepath.Join(root, "session"), SessionOptions{
-		Files: []SessionFile{{Source: script, Destination: "../config.json"}},
+		Files: []SessionFile{{Source: script, Destination: "../config.json", Checksum: testChecksum("amx")}},
 	})
 	if err == nil {
 		t.Fatal("unsafe resource destination accepted")
@@ -96,11 +98,30 @@ func TestPrepareSessionRejectsResourceSymlink(t *testing.T) {
 		t.Fatal(err)
 	}
 	_, err := PrepareSession(runtimeDir, script, filepath.Join(root, "session"), SessionOptions{
-		Files: []SessionFile{{Source: link, Destination: "plugins/plugin.so"}},
+		Files: []SessionFile{{Source: link, Destination: "plugins/plugin.so", Checksum: testChecksum("amx")}},
 	})
 	if err == nil {
 		t.Fatal("resource symlink accepted")
 	}
+}
+
+func TestPrepareSessionRejectsChangedResource(t *testing.T) {
+	root, runtimeDir, script := sessionFixture(t)
+	plugin := filepath.Join(root, "plugin.so")
+	if err := os.WriteFile(plugin, []byte("changed"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	_, err := PrepareSession(runtimeDir, script, filepath.Join(root, "session"), SessionOptions{
+		Files: []SessionFile{{Source: plugin, Destination: "plugins/plugin.so", Checksum: testChecksum("expected")}},
+	})
+	if err == nil {
+		t.Fatal("changed resource accepted")
+	}
+}
+
+func testChecksum(contents string) string {
+	sum := sha256.Sum256([]byte(contents))
+	return fmt.Sprintf("sha256:%x", sum)
 }
 
 func sessionFixture(t *testing.T) (string, string, string) {
