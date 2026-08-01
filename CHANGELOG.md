@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.7.0 - 2026-08-01
+
+- Stage verified project scriptfiles in isolated server sessions.
+
 ## 0.6.1 - 2026-08-01
 
 - Verify staged server resources against their lockfile checksums.

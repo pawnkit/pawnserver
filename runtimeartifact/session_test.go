@@ -119,6 +119,27 @@ func TestPrepareSessionRejectsChangedResource(t *testing.T) {
 	}
 }
 
+func TestPrepareSessionStagesScriptfiles(t *testing.T) {
+	root, runtimeDir, script := sessionFixture(t)
+	language := filepath.Join(root, "English")
+	if err := os.WriteFile(language, []byte("welcome=Hello"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	destination := filepath.Join(root, "session")
+	_, err := PrepareSession(runtimeDir, script, destination, SessionOptions{
+		Files: []SessionFile{{
+			Source: language, Destination: "scriptfiles/languages/English", Checksum: testChecksum("welcome=Hello"),
+		}},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	got, err := os.ReadFile(filepath.Join(destination, "scriptfiles", "languages", "English"))
+	if err != nil || string(got) != "welcome=Hello" {
+		t.Fatalf("scriptfile = %q, %v", got, err)
+	}
+}
+
 func testChecksum(contents string) string {
 	sum := sha256.Sum256([]byte(contents))
 	return fmt.Sprintf("sha256:%x", sum)

@@ -217,7 +217,7 @@ func sessionDestination(root, name string) (string, error) {
 	}
 	prefix, _, _ := strings.Cut(clean, "/")
 	switch prefix {
-	case "components", "filterscripts", "plugins":
+	case "components", "filterscripts", "plugins", "scriptfiles":
 	default:
 		return "", fmt.Errorf("runtime session destination %q is not a server resource", name)
 	}
