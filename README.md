@@ -21,6 +21,8 @@ arm64.
 PawnKit's tested server set pins the supported archives and checksums:
 `server-preview-2026-07-29` in `pawnkit-spec v0.1.42`.
 RFC 0020 runtime indexes separately pin clean upstream server downloads.
+Isolated open.mp sessions can stage verified plugins, components, and
+filterscripts without changing the shared runtime cache.
 
 ## Build and inspect a bundle
 

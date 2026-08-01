@@ -9,9 +9,20 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 )
 
-const maxScriptBytes = 128 << 20
+const (
+	maxScriptBytes          = 128 << 20
+	maxSessionResourceBytes = 512 << 20
+	maxSessionResourceFiles = 4096
+)
+
+// SessionFile is a verified project file staged for a server session.
+type SessionFile struct {
+	Source      string
+	Destination string
+}
 
 type SessionOptions struct {
 	Name               string
@@ -49,6 +60,9 @@ type SessionOptions struct {
 	LogDatabase        *bool
 	LogDatabaseQueries *bool
 	LogCookies         *bool
+	Files              []SessionFile
+	LegacyPlugins      []string
+	SideScripts        []string
 }
 
 type Session struct {
@@ -88,7 +102,8 @@ func PrepareSession(runtimeDir, script, destination string, options SessionOptio
 	applySessionOptions(config, options)
 	pawn := object(config, "pawn")
 	pawn["main_scripts"] = []string{"main 1"}
-	pawn["side_scripts"] = []string{}
+	pawn["legacy_plugins"] = append([]string(nil), options.LegacyPlugins...)
+	pawn["side_scripts"] = append([]string(nil), options.SideScripts...)
 
 	parent := filepath.Dir(destination)
 	if err := os.MkdirAll(parent, 0o750); err != nil {
@@ -106,6 +121,9 @@ func PrepareSession(runtimeDir, script, destination string, options SessionOptio
 	if err := copyRegularFile(script, filepath.Join(gamemodes, "main.amx"), maxScriptBytes); err != nil {
 		return Session{}, err
 	}
+	if err := stageSessionFiles(staging, options.Files); err != nil {
+		return Session{}, err
+	}
 	configPath := filepath.Join(staging, "config.json")
 	if err := writeConfiguration(configPath, config); err != nil {
 		return Session{}, err
@@ -118,6 +136,60 @@ func PrepareSession(runtimeDir, script, destination string, options SessionOptio
 		Configuration: filepath.Join(destination, "config.json"),
 		Script:        filepath.Join(destination, "gamemodes", "main.amx"),
 	}, nil
+}
+
+func stageSessionFiles(root string, files []SessionFile) error {
+	if len(files) > maxSessionResourceFiles {
+		return fmt.Errorf("runtime session exceeds %d resource files", maxSessionResourceFiles)
+	}
+	seen := make(map[string]bool, len(files))
+	var total int64
+	for _, file := range files {
+		destination, err := sessionDestination(root, file.Destination)
+		if err != nil {
+			return err
+		}
+		key := strings.ToLower(filepath.Clean(destination))
+		if seen[key] {
+			return fmt.Errorf("runtime session destination %q is duplicated", file.Destination)
+		}
+		seen[key] = true
+		info, err := os.Lstat(file.Source)
+		if err != nil {
+			return fmt.Errorf("runtime session resource %q: %w", file.Destination, err)
+		}
+		if !info.Mode().IsRegular() || info.Mode()&os.ModeSymlink != 0 {
+			return fmt.Errorf("runtime session resource %q is not a regular file", file.Destination)
+		}
+		total += info.Size()
+		if total > maxSessionResourceBytes {
+			return errors.New("runtime session resources exceed size limit")
+		}
+		if err := os.MkdirAll(filepath.Dir(destination), 0o750); err != nil {
+			return err
+		}
+		if err := copyRegularFile(file.Source, destination, maxSessionResourceBytes); err != nil {
+			return fmt.Errorf("runtime session resource %q: %w", file.Destination, err)
+		}
+	}
+	return nil
+}
+
+func sessionDestination(root, name string) (string, error) {
+	if name == "" || strings.Contains(name, "\\") || filepath.IsAbs(name) {
+		return "", fmt.Errorf("runtime session destination %q is unsafe", name)
+	}
+	clean := filepath.ToSlash(filepath.Clean(filepath.FromSlash(name)))
+	if clean == "." || clean == ".." || strings.HasPrefix(clean, "../") {
+		return "", fmt.Errorf("runtime session destination %q is unsafe", name)
+	}
+	prefix, _, _ := strings.Cut(clean, "/")
+	switch prefix {
+	case "components", "filterscripts", "plugins":
+	default:
+		return "", fmt.Errorf("runtime session destination %q is not a server resource", name)
+	}
+	return filepath.Join(root, filepath.FromSlash(clean)), nil
 }
 
 func applySessionOptions(config map[string]any, options SessionOptions) {

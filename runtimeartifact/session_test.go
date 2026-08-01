@@ -25,10 +25,16 @@ func TestPrepareSessionUsesLocalScriptAndConfiguration(t *testing.T) {
 		t.Fatal(err)
 	}
 	destination := filepath.Join(root, "session")
+	plugin := filepath.Join(root, "streamer.so")
+	if err := os.WriteFile(plugin, []byte("plugin"), 0o600); err != nil {
+		t.Fatal(err)
+	}
 	disabled := false
 	session, err := PrepareSession(runtimeDir, script, destination, SessionOptions{
 		Name: "Test server", Port: 7788, Announce: &disabled, EnableQuery: &disabled,
 		MaxPlayers: 100, GameMode: "Test mode", RCONPassword: "secret",
+		Files:         []SessionFile{{Source: plugin, Destination: "plugins/streamer.so"}},
+		LegacyPlugins: []string{"streamer"}, SideScripts: []string{"extra 1"},
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -58,9 +64,60 @@ func TestPrepareSessionUsesLocalScriptAndConfiguration(t *testing.T) {
 	if got := pawn["main_scripts"].([]any)[0]; got != "main 1" {
 		t.Fatalf("main script = %v", got)
 	}
-	if got := len(pawn["side_scripts"].([]any)); got != 0 {
-		t.Fatalf("side scripts = %d", got)
+	if got := pawn["legacy_plugins"].([]any)[0]; got != "streamer" {
+		t.Fatalf("legacy plugin = %v", got)
 	}
+	if got := pawn["side_scripts"].([]any)[0]; got != "extra 1" {
+		t.Fatalf("side script = %v", got)
+	}
+	resource, err := os.ReadFile(filepath.Join(destination, "plugins", "streamer.so"))
+	if err != nil || string(resource) != "plugin" {
+		t.Fatalf("resource = %q, %v", resource, err)
+	}
+}
+
+func TestPrepareSessionRejectsUnsafeResourceDestination(t *testing.T) {
+	root, runtimeDir, script := sessionFixture(t)
+	_, err := PrepareSession(runtimeDir, script, filepath.Join(root, "session"), SessionOptions{
+		Files: []SessionFile{{Source: script, Destination: "../config.json"}},
+	})
+	if err == nil {
+		t.Fatal("unsafe resource destination accepted")
+	}
+}
+
+func TestPrepareSessionRejectsResourceSymlink(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		t.Skip("symlink creation requires elevated Windows permissions")
+	}
+	root, runtimeDir, script := sessionFixture(t)
+	link := filepath.Join(root, "plugin.so")
+	if err := os.Symlink(script, link); err != nil {
+		t.Fatal(err)
+	}
+	_, err := PrepareSession(runtimeDir, script, filepath.Join(root, "session"), SessionOptions{
+		Files: []SessionFile{{Source: link, Destination: "plugins/plugin.so"}},
+	})
+	if err == nil {
+		t.Fatal("resource symlink accepted")
+	}
+}
+
+func sessionFixture(t *testing.T) (string, string, string) {
+	t.Helper()
+	root := t.TempDir()
+	runtimeDir := filepath.Join(root, "runtime")
+	if err := os.Mkdir(runtimeDir, 0o750); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(runtimeDir, "config.json"), []byte(`{"pawn":{}}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	script := filepath.Join(root, "project.amx")
+	if err := os.WriteFile(script, []byte("amx"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	return root, runtimeDir, script
 }
 
 func TestRunSessionUsesSessionDirectory(t *testing.T) {

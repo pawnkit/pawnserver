@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.6.0 - 2026-08-01
+
+- Stage bounded plugin, component, and filterscript files in isolated open.mp
+  sessions.
+- Configure session-local legacy plugins and side scripts.
+
 ## 0.5.1 - 2026-07-31
 
 - Make runtime archive mode tests portable to Windows.
