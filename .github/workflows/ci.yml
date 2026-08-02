@@ -125,4 +125,4 @@ jobs:
       - uses: pawnkit/pawn-actions/support-check@v1.6.1
         with:
           repository: pawnkit/pawnserver
-          targets: linux-amd64
+          targets: linux-amd64,windows-amd64,darwin-arm64

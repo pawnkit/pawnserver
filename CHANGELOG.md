@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.7.2 - 2026-08-02
+
+- Validate all three supported archive targets in the support check.
+
 ## 0.7.1 - 2026-08-02
 
 - Use the current PawnKit Actions and spec releases in tested-release CI.
