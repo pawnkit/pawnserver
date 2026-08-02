@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.7.1 - 2026-08-02
+
+- Use the current PawnKit Actions and spec releases in tested-release CI.
+- Record the Windows and macOS archive checks in the support metadata.
+
 ## 0.7.0 - 2026-08-01
 
 - Stage verified project scriptfiles in isolated server sessions.

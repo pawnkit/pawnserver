@@ -19,7 +19,9 @@ Release archives are available for Linux, macOS, and Windows on amd64 and
 arm64.
 
 PawnKit's tested server set pins the supported archives and checksums:
-`server-preview-2026-07-29` in `pawnkit-spec v0.1.42`.
+`server-preview-2026-07-29` in `pawnkit-spec v0.1.100`. That set currently
+keeps the v0.1.1 server archive for compatibility coverage; the release
+archive above is the current CLI package.
 RFC 0020 runtime indexes separately pin clean upstream server downloads.
 Isolated open.mp sessions can stage verified plugins, components, and
 filterscripts without changing the shared runtime cache.
