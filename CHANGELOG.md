@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.7.4 - 2026-08-03
+
+- Use PawnKit Actions v1.8.73 in CI.
+
 ## 0.7.3 - 2026-08-03
 
 - Use PawnKit Actions v1.8.72 in CI.
