@@ -100,17 +100,17 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
         with:
           repository: pawnkit/pawnkit-spec
-          ref: v0.1.101
+          ref: v0.1.137
           path: .pawnkit/spec
           persist-credentials: false
       - id: pawnserver
-        uses: pawnkit/pawn-actions/release-set@v1.8.58
+        uses: pawnkit/pawn-actions/release-set@v1.8.71
         with:
-          release-set: .pawnkit/spec/release-sets/server-preview-2026-07-29.json
+          release-set: .pawnkit/spec/release-sets/server-preview-2026-08-03.json
           component: pawnserver
           target: ${{ matrix.target }}
           verify-remote: 'false'
-      - uses: pawnkit/pawn-actions/setup-tool@v1.8.58
+      - uses: pawnkit/pawn-actions/setup-tool@v1.8.71
         with:
           binary: pawnserver
           version: ${{ steps.pawnserver.outputs.version }}
