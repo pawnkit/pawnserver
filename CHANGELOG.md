@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.7.3 - 2026-08-03
+
+- Use PawnKit Actions v1.8.72 in CI.
+
 ## 0.7.2 - 2026-08-02
 
 - Validate all three supported archive targets in the support check.

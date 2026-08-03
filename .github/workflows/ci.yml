@@ -104,13 +104,13 @@ jobs:
           path: .pawnkit/spec
           persist-credentials: false
       - id: pawnserver
-        uses: pawnkit/pawn-actions/release-set@v1.8.71
+        uses: pawnkit/pawn-actions/release-set@v1.8.72
         with:
           release-set: .pawnkit/spec/release-sets/server-preview-2026-08-03.json
           component: pawnserver
           target: ${{ matrix.target }}
           verify-remote: 'false'
-      - uses: pawnkit/pawn-actions/setup-tool@v1.8.71
+      - uses: pawnkit/pawn-actions/setup-tool@v1.8.72
         with:
           binary: pawnserver
           version: ${{ steps.pawnserver.outputs.version }}
@@ -122,7 +122,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0
-      - uses: pawnkit/pawn-actions/support-check@v1.8.71
+      - uses: pawnkit/pawn-actions/support-check@v1.8.72
         with:
           repository: pawnkit/pawnserver
           targets: linux-amd64,windows-amd64,darwin-arm64
